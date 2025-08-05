@@ -113,7 +113,21 @@ def query_ollama(model: str, context: str, prompt: str) -> str:
     ollama_url = "http://localhost:11434/api/generate"
     
     # Construct the full prompt with context
-    full_prompt = f"Context:\n{context}\n\nQuestion: {prompt}\n\nAnswer:"
+    full_prompt = f"""
+    Answer in a direct and concise tone, I am in a hurry. Your audience is an expert, so be
+    highly specific. If there are ambiguous terms or acronyms, first define them.
+    Write an answer with five sentences maximum for the question below based on the provided context.
+    If the context provides insufficient information, reply ''I cannot answer''. Answer in an unbiased, comprehensive,
+    and scholarly tone. If the question is subjective, provide an opinionated answer in the concluding 1-2 sentences.
+
+    {context}
+
+    Question: {prompt}
+
+    Answer:
+    """
+
+    # f"Context:\n{context}\n\nQuestion: {prompt}\n\nAnswer:"
     
     payload = {
         "model": model,

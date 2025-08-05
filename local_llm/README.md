@@ -104,7 +104,7 @@ All interactions are automatically logged to timestamped files in the `logs/` di
 - Check if running on default port 11434
 
 **"Model not found"**
-- Install the model: `ollama push <model_name>`
+- Install the model: `ollama pull <model_name>`
 - List available models: `ollama list`
 
 **PDF extraction issues**
