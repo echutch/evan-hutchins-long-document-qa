@@ -1,0 +1,90 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Light Attention Viewer</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 20px; background: #fff; color: #222; }
+  .controls { margin-bottom: 15px; }
+  select, input[type=number] { margin-right: 10px; padding: 4px; font-size: 1em; }
+  .para { margin-bottom: 10px; padding: 8px; border-radius: 6px; cursor: default; }
+  .dimmed { color: #999; background-color: #f5f5f5; }
+</style>
+</head>
+<body>
+<div class="controls">
+  <label>Layer:
+    <select id="layerSelect"></select>
+  </label>
+  <label>Top N:
+    <input type="number" id="topNInput" min="1" max="5" value="2" />
+  </label>
+</div>
+
+<div id="docContainer"></div>
+
+<script>
+const DATA = {"meta": {"n_layers": 24, "paragraph_count": 5, "model_name": "EleutherAI/pythia-410m"}, "paragraphs": ["[PASTE YOUR LONG DOCUMENT HERE, WITH PARAGRAPHS SEPARATED BY BLANK LINES]", "[SECTION 1] Berlin is the capital of Germany.", "[SECTION 2] Madrid is the capital of Spain.", "[SECTION 3] Rome is the capital of Italy.", "[SECTION 4] Paris is the capital of France. It is known for the Eiffel Tower."], "layer_para_scores": [[0.0018313201144337654, 0.004447278566658497, 0.00569203170016408, 0.007077501155436039, 0.015637729316949844], [0.002110912464559078, 0.008045123890042305, 0.006303538102656603, 0.005755528807640076, 0.011483736336231232], [0.0016371491365134716, 0.011266105808317661, 0.007728904485702515, 0.006860852707177401, 0.011367635801434517], [0.001366961165331304, 0.009171507321298122, 0.005085841752588749, 0.004282128997147083, 0.008632584474980831], [0.0019133188761770725, 0.00906192883849144, 0.005454965867102146, 0.004568754695355892, 0.008278738707304], [0.00032959823147393763, 0.001753912540152669, 0.001323449076153338, 0.0010882687056437135, 0.006800868082791567], [0.0007135727209970355, 0.0030383989214897156, 0.002730726730078459, 0.002996764611452818, 0.004535564687103033], [0.0007441073539666831, 0.002891336102038622, 0.0020629020873457193, 0.0019767803605645895, 0.0030361248645931482], [0.0008498539100401103, 0.0033568372018635273, 0.0022532003931701183, 0.0019274941878393292, 0.003964998293668032], [0.0008604934555478394, 0.004153597168624401, 0.002520299283787608, 0.002273375866934657, 0.0043300725519657135], [0.0008691166876815259, 0.0025617617648094893, 0.0017591436626389623, 0.0013852391857653856, 0.0024074853863567114], [0.0009728254517540336, 0.003803358878940344, 0.002470106817781925, 0.0015956575516611338, 0.0027095810510218143], [0.0019714978989213705, 0.004056788515299559, 0.0023708874359726906, 0.0015453521627932787, 0.0031587586272507906], [0.0008473459747619927, 0.0033625448122620583, 0.0022580265067517757, 0.0014030580641701818, 0.002909637987613678], [0.0008923023124225438, 0.0035942713730037212, 0.002085627755150199, 0.001351207378320396, 0.002422063611447811], [0.0006886705523356795, 0.0028798426501452923, 0.0016254476504400373, 0.0011584266321733594, 0.0020836982876062393], [0.0016685420414432883, 0.0048495871014893055, 0.0020410858560353518, 0.0011983540607616305, 0.001888095517642796], [0.0007720150169916451, 0.0028635794296860695, 0.0016599688678979874, 0.0009518548613414168, 0.002058671787381172], [0.0016252790810540318, 0.004631251562386751, 0.002413980895653367, 0.001059932867065072, 0.0017146910540759563], [0.0011909984750673175, 0.004414656199514866, 0.002422942314296961, 0.0011704337084665895, 0.001737949438393116], [0.0008022998226806521, 0.004688944201916456, 0.0015196081949397922, 0.0007246510358527303, 0.0009993257699534297], [0.001783854328095913, 0.005703120958060026, 0.0027258943300694227, 0.0008018277585506439, 0.002049078466370702], [0.0003985192743130028, 0.006400853395462036, 0.002551992889493704, 5.660144233843312e-05, 0.0013091417495161295], [2.21659956878284e-06, 0.0020823420491069555, 0.002377280732616782, 1.4936566913092975e-05, 0.004450938664376736]]};
+
+const layerSelect = document.getElementById('layerSelect');
+const topNInput = document.getElementById('topNInput');
+const docContainer = document.getElementById('docContainer');
+
+for(let i=0; i<DATA.meta.n_layers; i++){
+  let opt = document.createElement('option');
+  opt.value = i;
+  opt.textContent = 'Layer ' + i;
+  layerSelect.appendChild(opt);
+}
+
+layerSelect.value = 0;
+
+function scoreToColor(norm) {
+  norm = Math.min(Math.max(norm, 0), 1);
+  let r1=255, g1=255, b1=204;
+  let r2=177, g2=0, b2=38;
+  let r = Math.round(r1 + (r2-r1)*norm);
+  let g = Math.round(g1 + (g2-g1)*norm);
+  let b = Math.round(b1 + (b2-b1)*norm);
+  return "rgb(" + r + "," + g + "," + b + ")";
+}
+
+function render() {
+  docContainer.innerHTML = '';
+  const layer = parseInt(layerSelect.value);
+  let topN = parseInt(topNInput.value);
+  if(isNaN(topN) || topN < 1) topN = 1;
+  if(topN > DATA.paragraphs.length) topN = DATA.paragraphs.length;
+  topNInput.value = topN;
+
+  const scores = DATA.layer_para_scores[layer];
+  const maxScore = Math.max(...scores, 1e-12);
+
+  const sortedIndices = [...scores.keys()].sort((a,b) => scores[b] - scores[a]);
+  const topIndices = new Set(sortedIndices.slice(0, topN));
+
+  for(let i=0; i<DATA.paragraphs.length; i++) {
+    const p = document.createElement('div');
+    p.className = 'para';
+    if(topIndices.has(i)) {
+      const normScore = scores[i]/maxScore;
+      p.style.backgroundColor = scoreToColor(normScore);
+      p.title = 'Paragraph ' + i + ' — score: ' + scores[i].toFixed(6);
+    } else {
+      p.classList.add('dimmed');
+      p.title = 'Paragraph ' + i + ' — outside top ' + topN;
+    }
+    p.textContent = DATA.paragraphs[i];
+    docContainer.appendChild(p);
+  }
+}
+
+layerSelect.addEventListener('change', render);
+topNInput.addEventListener('input', render);
+
+render();
+</script>
+
+</body>
+</html>
