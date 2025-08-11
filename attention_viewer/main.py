@@ -1,20 +1,25 @@
-import torch
+from torch import cuda, tensor
 import json
 import numpy as np
 from transformers import AutoTokenizer
 from transformer_lens import HookedTransformer
 from typing import Optional
+from dotenv import load_dotenv
+import os
+
+# Load environment variables from .env file
+load_dotenv()
 
 # TODO: Get rid of layers, only save final layer? Or add option to save all layers?
 # TODO: Add option to save all heads or only average over heads?
 
-# TODO: Include question and answer in the HTML output
 # TODO: Document parsing setup & allow custom paragraph delimiters
 
 # TODO: Route to save HTML in a specific directory
 # TODO: Add CLI arguments for model name, output path, device, default layer, and top-N paragraphs
 
 # TODO: README with usage instructions
+# TODO: Add logging for errors and progress
 
 def generate_light_attention_viewer(
     document: str,
@@ -42,12 +47,15 @@ def generate_light_attention_viewer(
     """
 
     if device is None:
-        device = "cuda" if torch.cuda.is_available() else "cpu"
-
+        device = "cuda" if cuda.is_available() else "cpu"
+    
+    print(f"Initializing model '{model_name}' on device '{device}'...")
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = HookedTransformer.from_pretrained(model_name, device=device)
+    print("Model loaded successfully")
 
     paragraphs = [p.strip() for p in document.split("\n\n") if p.strip()]
+    print(f"Processing document with {len(paragraphs)} paragraphs...")
     prompt_prefix = "Document:\n"
     prompt_tokens = tokenizer.encode(prompt_prefix, add_special_tokens=False)
 
@@ -64,12 +72,18 @@ def generate_light_attention_viewer(
     qids = tokenizer.encode(question_prefix, add_special_tokens=False)
     prompt_tokens.extend(qids)
 
-    tokens = torch.tensor([prompt_tokens]).to(device)
+    tokens = tensor([prompt_tokens]).to(device)
     answer_start_idx = len(prompt_tokens) - len(qids)
-
+    
+    print(f"Running model inference with {len(prompt_tokens)} tokens...")
     logits, cache = model.run_with_cache(tokens)
+    print("Model inference completed")
+
+    answer_tokens = logits[0, answer_start_idx:].argmax(dim=-1)
+    answer = tokenizer.decode(answer_tokens, skip_special_tokens=True)
 
     n_layers = model.cfg.n_layers
+    print(f"Processing attention patterns across {n_layers} layers...")
 
     layer_para_scores = []
 
@@ -87,11 +101,14 @@ def generate_light_attention_viewer(
             para_scores.append(float(token_scores.mean()) if token_scores.size > 0 else 0.0)
         layer_para_scores.append(para_scores)
 
+    print("Preparing data and generating HTML viewer...")
     json_data = {
         "meta": {
             "n_layers": n_layers,
             "paragraph_count": len(paragraphs),
-            "model_name": model_name
+            "model_name": model_name,
+            "question": question,
+            "answer": answer,
         },
         "paragraphs": paragraphs,
         "layer_para_scores": layer_para_scores
@@ -114,6 +131,14 @@ def generate_light_attention_viewer(
 </style>
 </head>
 <body>
+
+<div class="qa-section">
+  <h2>Question</h2>
+  <p>{question}</p>
+  <h2>LLM Response</h2>
+  <p>{answer.strip()}</p>
+</div>
+
 <div class="controls">
   <label>Layer:
     <select id="layerSelect"></select>
@@ -191,6 +216,7 @@ render();
 </html>
 """
 
+    print(f"Writing HTML file to '{output_html}'...")
     with open(output_html, "w", encoding="utf-8") as f:
         f.write(html)
 
@@ -208,15 +234,19 @@ if __name__ == "__main__":
 
     [SECTION 2] Madrid is the capital of Spain.
 
-    [SECTION 3] Rome is the capital of Italy.
+    [SECTION 3] Paris is the capital of France. It is known for the Eiffel Tower.
 
-    [SECTION 4] Paris is the capital of France. It is known for the Eiffel Tower.
+    [SECTION 4] Rome is the capital of Italy.
+
     """
 
     generate_light_attention_viewer(
         your_long_document_text,
-        "What is the capital of Paris?",
-        model_name="EleutherAI/pythia-410m",
+        "What is the capital of France?",
+        model_name='EleutherAI/pythia-410m',
         default_layer=0,
         default_top_n=2,
     )
+
+
+# meta-llama/Llama-3.1-70B-Instruct
