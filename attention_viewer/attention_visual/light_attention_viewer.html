@@ -1,0 +1,117 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Light Attention Viewer</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 20px; background: #fff; color: #222; }
+  .controls { margin-bottom: 15px; }
+  select, input[type=number] { margin-right: 10px; padding: 4px; font-size: 1em; }
+  .para { margin-bottom: 10px; padding: 8px; border-radius: 6px; cursor: default; }
+  .dimmed { color: #999; background-color: #f5f5f5; }
+</style>
+</head>
+<body>
+
+<div class="qa-section">
+  <h2>Question</h2>
+  <p>Answer in a direct and concise tone, I am in a hurry. Your audience is an expert, so be
+  highly specific. If there are ambiguous terms or acronyms, first define them.
+  Write an answer with five sentences maximum for the question below based on the provided context.
+  If the context provides insufficient information, reply ''I cannot answer''. Answer in an unbiased, comprehensive,
+  and scholarly tone. If the question is subjective, provide an opinionated answer in the concluding 1-2 sentences.
+
+  Question: How does PaperQA compare to expert humans?
+  </p>
+  <h2>LLM Response</h2>
+  <p>: What the the sentence question clear manner, using am looking a situation and I response is the audience in so I conciseclear clear technical and Provide you is any or, unclearronyms, define define them.8 If your answer that a or or. each following:.
+
+ on the
+
+.
+  What you question is multiple information, use withI don provide this  based the
+ manner neutral manner  and accurate tone.
+
+ Use the context is too, provide a objective based response.
+ a form paragraph sentence-2 sentences.
+Question What: What do theQA perform to expert humans?  : Paper</p>
+</div>
+
+<h2>Attention Visualization</h2>
+
+<div class="controls">
+  <label>Layer:
+    <select id="layerSelect"></select>
+  </label>
+  <label>Top N:
+    <input type="number" id="topNInput" min="1" max="5" value="2" />
+  </label>
+</div>
+
+<div id="docContainer"></div>
+
+<script>
+const DATA = {"meta": {"n_layers": 16, "paragraph_count": 5, "model_name": "meta-llama/Llama-3.2-1B-Instruct", "question": "Answer in a direct and concise tone, I am in a hurry. Your audience is an expert, so be\n  highly specific. If there are ambiguous terms or acronyms, first define them.\n  Write an answer with five sentences maximum for the question below based on the provided context.\n  If the context provides insufficient information, reply ''I cannot answer''. Answer in an unbiased, comprehensive,\n  and scholarly tone. If the question is subjective, provide an opinionated answer in the concluding 1-2 sentences.\n\n  Question: How does PaperQA compare to expert humans?\n  ", "answer": ": What the the sentence question clear manner, using am looking a situation and I response is the audience in so I conciseclear clear technical and Provide you is any or, unclearronyms, define define them.8 If your answer that a or or. each following:.\n\n on the\n\n.\n  What you question is multiple information, use withI don provide this  based the\n manner neutral manner  and accurate tone.\n\n Use the context is too, provide a objective based response.\n a form paragraph sentence-2 sentences.\nQuestion What: What do theQA perform to expert humans?  : Paper"}, "paragraphs": ["Table 2: Evaluation on LitQA. We compare PaperQA with other LLMs, the AutoGPT agent, and\ncommercial products that use RAG. AutoGPT was run with GPT-4, where other implementation\ndetails are given in the Appendix B. Elicit.AI was run on default settings, Perplexity was run in\nacademic mode, Perplexity Co-pilot was run on default settings (perplexity model, \u201call sources\u201d),\nand \u201cAssistant by Scite \u201d was run on default settings. Each question was run on a new context\n(thread) and all commercial products were evaluated on September 27, 2023. We report averages\nover a different number of runs for each.\nModel Samples\nResponse Score\nCorrect Incorrect Unsure Accuracy ( Correct\nAll ) Precision ( Correct\nSure )\nRandom 100 10.2 29.5 10.3 20.4% 25.7%\nHuman 5 33.4 4.6 12.0 66.8% 87.9%\nClaude-2 3 20.3 26.3 3.3 40.6% 43.6%\nGPT-4 3 16.7 16.3 17.0 33.4% 50.6%\nAutoGPT 3 20.7 7.3 22.0 41.4% 73.9%\nElicit 1 12.0 16.0 22.0 24.0% 42.9%\nScite 1 12.0 21.0 17.0 24.0% 36.4%\nPerplexity 1 9.0 10.0 31.0 18.0% 47.4%", "Perplexity (Co-pilot) 1 29.0 10.0 12.0 58.0% 74.4%\nPaperQA 4 34.8 4.8 10.5 69.5% 87.9%\nand Perplexity \u2013 in Table 2. All commercial tools are specifically tailored to answering questions\nby retrieving scientific literature. We give them the same prompt as to PaperQA. From Table 2 we\nsee that PaperQA outperforms all competing models and products, and is on par with that of human\nexperts with access to the internet. Furthermore, we see the lowest rate of incorrectly answered ques-\ntions out of all tools, which rivals that of humans. This emphasizes that PaperQA is better calibrated\nto express uncertainty when it actually is uncertain. Surprisingly, GPT-4 and Claude-2 perform bet-\nter than random although the questions are from papers after their training cut-off date, suggesting\nthey have latent knowledge, leading to useful bias towards answers that are more plausible.\nPaperQA averaged 4,500 tokens (prompt + completion) for the more expensive LLMs (agent LLM,", "answer LLM, ask LLM) and 24,000 tokens for the cheaper, high-throughput LLM (summary LLM).\nBased on commercial pricing as of September 2023, that gives a cost per question of $0.18 using\nthe stated GPT-4 and GPT-3.5-turbo models. It took PaperQA on average about 2.4 hours to answer\nall questions, which is also on par with humans who were given 2.5 hours. A single instance of\nPaperQA would thus cost $3.75 per hour, which is a fraction of an average hourly wage of a desk\nresearcher. We exclude other negligible operating costs, such as search engine APIs, or electricity.\nHow does PaperQA compare to expert humans? PaperQA shows similar results to those of\nthe expert humans who answered the questions. To quantify this, we calculate the categorical cor-\nrelation (Cramer\u2019s V ) of the responses for each human-human and human-PaperQA pair. Average\nhuman-human V is 0.66\u00b10.03, whereas average human-PaperQAV is 0.67\u00b10.02 (mean \u00b1 stderr),", "indicating that PaperQA is, on average, as correlated with human respondents as the human respon-\ndents are with each other, implying no discernable difference in responses. To compare, the average\nV between humans and Perplexity was 0.630 \u00b1 0.05.\nAblating PaperQA We report performance on LitQA when toggling different parts and LLMs of\nPaperQA in Table 3. Using GPT-4 as the answer LLM slightly outperforms Claude-2. When we\nlook at the different components of PaperQA, we observe a major drop in performance when not\nincluding multiple-choice options as answers ( no MC options) and using Semantic Scholar instead\nof Google Scholar. The former we explain with the fact that closed-form questions are easier than\nopen-form ones, and the model can use keywords derived from the possible answers to search.\nThe drop in performance of the linear settings, Vanilla RAG and No search, show the advantage of", "an agent-based model that can call tools multiple times until it is satisfied with the final answer.\nSurprisingly enough, not using the LLM\u2019s latent knowledge ( no ask LLM) also hurts performance,\ndespite the benchmark being based on information after the cutoff date \u2013 we suggest that the useful\nlatent knowledge we find LLMs to possess in Table 5 helps the agent use the best pieces of evidence.\n7"], "layer_para_scores": [[0.0002524854789953679, 0.00024610725813545287, 0.0002964609593618661, 0.0005790297873318195, 0.0018015189561992884], [0.0017636780394241214, 4.7436693421332166e-05, 6.117113662185147e-05, 0.00011909011664101854, 0.0003141775378026068], [4.622052438207902e-05, 5.0490169087424874e-05, 5.895569483982399e-05, 0.00012834729568567127, 0.0002996858675032854], [5.152568337507546e-05, 7.208208262454718e-05, 6.619357009185478e-05, 0.00010788896179292351, 0.00030804341076873243], [6.712353933835402e-05, 9.587327804183587e-05, 0.00010451968410052359, 0.0001810374524211511, 0.0004948212881572545], [7.694301166338846e-05, 9.005974425235763e-05, 9.996964945457876e-05, 0.00011769384582294151, 0.00039507076144218445], [0.00010776305862236768, 0.00012526402133516967, 0.00011911002366105095, 0.00013414325076155365, 0.0003543997881934047], [0.00015969651576597244, 0.00019056451856158674, 0.0001607913727639243, 0.00019473812426440418, 0.00035332352854311466], [0.00013582546671386808, 0.00017773830040823668, 0.00012738251825794578, 0.00012703213724307716, 0.00016679157852195203], [8.72328964760527e-05, 0.00011512365017551929, 9.303678962169215e-05, 0.00012036119005642831, 0.00021821200789418072], [8.775567403063178e-05, 0.00012048330972902477, 0.00010169371671508998, 9.148757089860737e-05, 0.00016123129171319306], [6.50088259135373e-05, 8.636421989649534e-05, 6.732374458806589e-05, 8.616217382950708e-05, 0.0001621870615053922], [8.987857290776446e-05, 9.370274347020313e-05, 8.403166430070996e-05, 8.781196811469272e-05, 0.00020275865972507745], [8.001014066394418e-05, 9.866387699730694e-05, 8.024132694117725e-05, 8.25840252218768e-05, 0.00015823908324819058], [9.646353282732889e-05, 0.00012302234244998544, 0.00010040941560873762, 0.00013859968748874962, 0.0002477562229614705], [0.00010293825471308082, 0.00013235332153271884, 0.00011386155529180542, 0.0001512263115728274, 0.00021872193610761315]]};
+
+const layerSelect = document.getElementById('layerSelect');
+const topNInput = document.getElementById('topNInput');
+const docContainer = document.getElementById('docContainer');
+
+for(let i=0; i<DATA.meta.n_layers; i++){
+  let opt = document.createElement('option');
+  opt.value = i;
+  opt.textContent = 'Layer ' + i;
+  layerSelect.appendChild(opt);
+}
+
+layerSelect.value = 15;
+
+function scoreToColor(norm) {
+  norm = Math.min(Math.max(norm, 0), 1);
+  let r1=255, g1=255, b1=204;
+  let r2=177, g2=0, b2=38;
+  let r = Math.round(r1 + (r2-r1)*norm);
+  let g = Math.round(g1 + (g2-g1)*norm);
+  let b = Math.round(b1 + (b2-b1)*norm);
+  return "rgb(" + r + "," + g + "," + b + ")";
+}
+
+function render() {
+  docContainer.innerHTML = '';
+  const layer = parseInt(layerSelect.value);
+  let topN = parseInt(topNInput.value);
+  if(isNaN(topN) || topN < 1) topN = 1;
+  if(topN > DATA.paragraphs.length) topN = DATA.paragraphs.length;
+  topNInput.value = topN;
+
+  const scores = DATA.layer_para_scores[layer];
+  const maxScore = Math.max(...scores, 1e-12);
+
+  const sortedIndices = [...scores.keys()].sort((a,b) => scores[b] - scores[a]);
+  const topIndices = new Set(sortedIndices.slice(0, topN));
+
+  for(let i=0; i<DATA.paragraphs.length; i++) {
+    const p = document.createElement('div');
+    p.className = 'para';
+    if(topIndices.has(i)) {
+      const normScore = scores[i]/maxScore;
+      p.style.backgroundColor = scoreToColor(normScore);
+      p.title = 'Paragraph ' + i + ' — score: ' + scores[i].toFixed(6);
+    } else {
+      p.classList.add('dimmed');
+      p.title = 'Paragraph ' + i + ' — outside top ' + topN;
+    }
+    p.textContent = DATA.paragraphs[i];
+    docContainer.appendChild(p);
+  }
+}
+
+layerSelect.addEventListener('change', render);
+topNInput.addEventListener('input', render);
+
+render();
+</script>
+
+</body>
+</html>

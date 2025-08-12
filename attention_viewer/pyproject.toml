@@ -1,0 +1,28 @@
+[project]
+name = "attention-viewer"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "numpy>=1.21.0",
+    "transformers>=4.55.0",
+    "torch>=0.23.0",
+    "transformer-lens>=2.15.4",
+    "python-dotenv>=1.1.1",
+    "hf-xet>=1.1.7",
+    "langchain>=0.3.27",
+    "pypdf>=6.0.0",
+]
+
+[[tool.uv.index]]
+name = "pytorch-cu118"
+url = "https://download.pytorch.org/whl/cu118"
+explicit = true
+
+
+[tool.uv.sources]
+torch = [
+  { index = "pytorch-cu118", marker = "sys_platform == 'linux' or sys_platform == 'win32'" },
+]
+
