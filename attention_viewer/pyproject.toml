@@ -10,6 +10,9 @@ dependencies = [
     "torch>=0.23.0",
     "transformer-lens>=2.15.4",
     "python-dotenv>=1.1.1",
+    "hf-xet>=1.1.7",
+    "langchain>=0.3.27",
+    "pypdf>=6.0.0",
 ]
 
 [[tool.uv.index]]

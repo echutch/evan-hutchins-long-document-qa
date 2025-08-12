@@ -6,6 +6,7 @@ from transformer_lens import HookedTransformer
 from typing import Optional
 from dotenv import load_dotenv
 import os
+from doc_loader import load_and_split_pdf
 
 # Load environment variables from .env file
 load_dotenv()
@@ -15,17 +16,15 @@ load_dotenv()
 
 # TODO: Document parsing setup & allow custom paragraph delimiters
 
-# TODO: Route to save HTML in a specific directory
 # TODO: Add CLI arguments for model name, output path, device, default layer, and top-N paragraphs
-
 # TODO: README with usage instructions
 # TODO: Add logging for errors and progress
 
 def generate_light_attention_viewer(
-    document: str,
+    file_name: str,
     question: str,
     model_name: str = "EleutherAI/pythia-410m",
-    output_html: str = "light_attention_viewer.html",
+    output_html: str = "attention_visual/light_attention_viewer.html",
     device: Optional[str] = None,
     default_layer: int = 0,
     default_top_n: int = 5
@@ -54,7 +53,10 @@ def generate_light_attention_viewer(
     model = HookedTransformer.from_pretrained(model_name, device=device)
     print("Model loaded successfully")
 
-    paragraphs = [p.strip() for p in document.split("\n\n") if p.strip()]
+    print("Splitting document into paragraphs...")
+    document = load_and_split_pdf(file_name)
+
+    paragraphs = [p.strip() for p in document if p.strip()]
     print(f"Processing document with {len(paragraphs)} paragraphs...")
     prompt_prefix = "Document:\n"
     prompt_tokens = tokenizer.encode(prompt_prefix, add_special_tokens=False)
@@ -68,7 +70,7 @@ def generate_light_attention_viewer(
         prompt_tokens.extend(ids)
         current_pos += len(ids)
 
-    question_prefix = f"Question: {question}\nAnswer:"
+    question_prefix = f"Prompt: {question}\nAnswer:"
     qids = tokenizer.encode(question_prefix, add_special_tokens=False)
     prompt_tokens.extend(qids)
 
@@ -138,6 +140,8 @@ def generate_light_attention_viewer(
   <h2>LLM Response</h2>
   <p>{answer.strip()}</p>
 </div>
+
+<h2>Attention Visualization</h2>
 
 <div class="controls">
   <label>Layer:
@@ -227,26 +231,38 @@ render();
 
 if __name__ == "__main__":
     # Example usage:
-    your_long_document_text = """
-    [PASTE YOUR LONG DOCUMENT HERE, WITH PARAGRAPHS SEPARATED BY BLANK LINES]
+    # your_long_document_text = """
+    # [PASTE YOUR LONG DOCUMENT HERE, WITH PARAGRAPHS SEPARATED BY BLANK LINES]
 
-    [SECTION 1] Berlin is the capital of Germany.
+    # [SECTION 1] Berlin is the capital of Germany.
 
-    [SECTION 2] Madrid is the capital of Spain.
+    # [SECTION 2] Madrid is the capital of Spain.
 
-    [SECTION 3] Paris is the capital of France. It is known for the Eiffel Tower.
+    # [SECTION 3] Paris is the capital of France. It is known for the Eiffel Tower.
 
-    [SECTION 4] Rome is the capital of Italy.
+    # [SECTION 4] Rome is the capital of Italy.
 
-    """
+    # """
+
+    file_name = "./test_docs/PaperQA_single.pdf"  # Path to your PDF file
+
+    question = """Answer in a direct and concise tone, I am in a hurry. Your audience is an expert, so be
+  highly specific. If there are ambiguous terms or acronyms, first define them.
+  Write an answer with five sentences maximum for the question below based on the provided context.
+  If the context provides insufficient information, reply ''I cannot answer''. Answer in an unbiased, comprehensive,
+  and scholarly tone. If the question is subjective, provide an opinionated answer in the concluding 1-2 sentences.
+
+  Question: How does PaperQA compare to expert humans?
+  """
 
     generate_light_attention_viewer(
-        your_long_document_text,
-        "What is the capital of France?",
-        model_name='EleutherAI/pythia-410m',
-        default_layer=0,
+        file_name=file_name,
+        question=question,
+        model_name='meta-llama/Llama-3.2-1B-Instruct',
+        default_layer=15,
         default_top_n=2,
+        device='cpu',
     )
 
 
-# meta-llama/Llama-3.1-70B-Instruct
+
