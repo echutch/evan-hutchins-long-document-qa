@@ -8,10 +8,14 @@ Much information is contained in various documents that we use everyday -- such 
 ## Setup
 This setup guide will walk through using the attention_viewer/ directory. To set up the local LLM testing suite in local_llm, look at the README within the directory. To use dbqa.ipynb, simply make sure to run the first installation cell.  
   
-attention_viewer/ is setup using a uv virtual environment.  
+attention_viewer/ is setup using a uv virtual environment. This project requires Python 3.12+ and uv to be installed.  
 
-...
-
+After installation, run the following commands to configure the virtual environment:
+```bash
+cd attention_viewer
+uv sync
+source .venv/bin/activate # On Windows: .venv\Scripts\activate
+```
 ## Codebase Structure
 ```
 evan-hutchins-long-document-qa/
@@ -40,21 +44,23 @@ evan-hutchins-long-document-qa/
     - RAG (Retrieval Augmented Generation) system using LangChain that processes a PDF file into text, chunks the document, and creates an embedding in a Chroma vector database. Chunks are retrieved by user query through MMR vector search and routed to Gemini 2.5 Flash to generate a response.
     - Simple LCLM (Long Context Language Model) that provides full document and user query to Gemini 2.5 Flash (1M token context length) to generate a response. Experimented on both systems with a 20 page paper.
 - local_llm/ - Second iteration through Python script on local machine.
-    - Similar structure to the first LCLM, but built on top of Ollama to streamline process of running open-source LLMs locally rather than through an API to avoid rate limits. 
-    - Tested with Gemma 3 and Llama 3.1 (both 128k token context window). Experimented with a 100 page paper.  
+    - Similar structure to the first LCLM, but built on top of Ollama to streamline process of running open-source LLMs locally rather than through an API to avoid rate limits. Run using long_context.py.
+    - Tested with Gemma 3 and Llama 3.1 (both 128k token context window). Experimented with a 100 page paper. Additional unit tests available in test_experiment.py. 
 - attention_viewer/ - Third iteration through Python script on local machine.
-    - Prototyped with PyTorch and the [TransformerLens](https://github.com/TransformerLensOrg/TransformerLens) library to visualize which paragraphs in a document were given the most attention. This is done by extracting the attention patterns of all tokens per attention head and per layer and taking the mean attention over heads for each paragraph. An HTML file is created that highlights the top N paragraphs in the document that received the most attention.
+    - Prototyped with PyTorch and the [TransformerLens](https://github.com/TransformerLensOrg/TransformerLens) library to visualize which paragraphs in a document were given the most attention. This is done by extracting the attention patterns of all tokens per attention head and per layer and taking the mean attention over heads for each paragraph. An HTML file is created that highlights the top N paragraphs in the document that received the most attention. Run using main.py.
     - Tested with Llama-3.2-1B-Instruct. Due to hardware constraints, only documents up to 1 page in length were tested.
 - docs/ - Project reports.
 
 ## Demo Video
-...
+In Progress...
 
 ## Algorithmic Design
 ...
 
 ## Issues and Future Work
-...
+- attention_viewer program has only been tested on simple hardware, and should be tested on much more robust GPUs to better understand attention patterns of long context models
+- Testing still needed on large (50+ page) document - similar hardware issues in the past
+- TransformerLens library is built for smaller models, may want to explore rebuilding using NNsight for larger models like Llama
 
 ## Change Log
 ...
