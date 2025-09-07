@@ -51,18 +51,40 @@ evan-hutchins-long-document-qa/
     - Tested with Llama-3.2-1B-Instruct. Due to hardware constraints, only documents up to 1 page in length were tested.
 - docs/ - Project reports.
 
+## Functional Design
+### Attention Viewer
+* Takes as input a file name to use as context and a question to answer. Optional parameters include a model name, html file to write to, number of inference layers, top n paragraphs in attention, and device to run inference on. Outputs an html file highlighting average attention patterns per paragraph.
+```python
+    def generate_light_attention_viewer(
+    file_name: str,
+    question: str,
+    model_name: str = "EleutherAI/pythia-410m",
+    output_html: str = "attention_visual/light_attention_viewer.html",
+    device: Optional[str] = None,
+    default_layer: int = 0,
+    default_top_n: int = 5
+):
+    ...
+    with open(output_html, "w", encoding="utf-8") as f:
+        f.write(html)
+```
+
 ## Demo Video
 In Progress...
 
 ## Algorithmic Design
-...
+### Attention Viewer
+The attention viewer module generates an html file of a document with paragraphs with high attention highlighted in an attempt to better understand which paragraphs contribute the most to a long context LLMs response. During inference, the model goes through many transformer layers before generating a final token. The first step of a transformer layer is the attention mechanism, where the model weighs the importance of all other tokens in the input sequence relative to the current token.  
+
+Using the TransformerLens library, we can look at the matrices created during each layer of inference, also called the attention patterns. Most models use multi-headed attention, so for each layer, there are several attention patterns.  
+
+Each token recieves an attention score in an attention pattern. If we take the average of attention scores per paragraph of words, we should be able to determine which paragraph received the most attention. Next, we can view the attention per paragraph for each attention head, or take an overall average over attention heads.  
+
+Finally, we create a visualization of attention by highlighting the top n paragraphs that received the most attention. The darkness of the coloring corresponds to the average attention score of the paragraph.
 
 ## Issues and Future Work
 - attention_viewer program has only been tested on simple hardware, and should be tested on much more robust GPUs to better understand attention patterns of long context models
 - Testing still needed on large (50+ page) document - similar hardware issues in the past
 - TransformerLens library is built for smaller models, may want to explore rebuilding using NNsight for larger models like Llama
-
-## Change Log
-...
 
 
